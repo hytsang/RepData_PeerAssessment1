@@ -9,36 +9,70 @@ output:
 ## Loading and preprocessing the data
 
 ```{r}
+echo = TRUE
+setwd("C:/Users/Howard/Documents/Coursera Data Science Stream/05. Report Writing/Project 1/")
+activity <- NULL
+activity <- read.csv("activity.csv", header = T, sep = ",")
 unzip(zipfile="activity.zip")
 data <- read.csv("activity.csv")
+```
+
+The variable created during by this code are set to NULL.
+
+```{r}
+echo = TRUE
+df_summary <- NULL
+su2 <- NULL
+su <- NULL
+mn_int <- NULL
+activity2 <- NULL
+mean_su2 <- NULL
+median_su2 <- NULL
+activity2_weekend <- NULL
+activity2_weekday <- NULL
+mean_activity2_weekday <- NULL
+mean_activity2_weekend <- NULL
 ```
 
 ## What is mean total number of steps taken per day?
 
 ```{r}
-library(ggplot2)
-total.steps <- tapply(data$steps, data$date, FUN=sum, na.rm=TRUE)
-qplot(total.steps, binwidth=1000, xlab="total number of steps taken each day")
-mean(total.steps, na.rm=TRUE)
-median(total.steps, na.rm=TRUE)
+echo = TRUE
+su <- tapply(activity$steps, activity$date, sum, na.rm=T)
 ```
+
+Hereafter is presented a histogram of the total number of steps taken each day.
+
+```{r}
+echo = TRUE
+hist(su, xlab = "sum of steps per day", main = "histogram of steps per day")
+```
+
+```{r}
+echo = TRUE
+mean_su <- round(mean(su))
+median_su <- round(median(su))
+print(c("The mean is",mean_su))
+```
+
+```{r}
+print(c("The median is",median_su))
+```
+
 
 ## What is the average daily activity pattern?
 
 ```{r}
-library(ggplot2)
-averages <- aggregate(x=list(steps=data$steps), by=list(interval=data$interval),
-                      FUN=mean, na.rm=TRUE)
-ggplot(data=averages, aes(x=interval, y=steps)) +
-    geom_line() +
-    xlab("5-minute interval") +
-    ylab("average number of steps taken")
+echo = TRUE
+mn_int <- tapply(activity$steps, activity$interval, mean, na.rm=T)
+plot(mn_int ~ unique(activity$interval), type="l", xlab = "5-min interval")
 ```
 
 The 5-minute interval (on average across all the days in the dataset) that contains the maximum number of steps.
 
 ```{r}
-averages[which.max(averages$steps),]
+echo = TRUE
+mn_int[which.max(mn_int)]
 ```
 
 ## Imputing missing values
@@ -51,51 +85,53 @@ table(missing)
 
 # Replace each missing value with the mean value of its 5-minute interval
 ```{r}
-fill.value <- function(steps, interval) {
-    filled <- NA
-    if (!is.na(steps))
-        filled <- c(steps)
-    else
-        filled <- (averages[averages$interval==interval, "steps"])
-    return(filled)
+echo = TRUE
+activity2 <- activity  # creation of the dataset that will have no more NAs
+for (i in 1:nrow(activity)){
+    if(is.na(activity$steps[i])){
+        activity2$steps[i]<- mn_int[[as.character(activity[i, "interval"])]]
+    }
 }
-filled.data <- data
-filled.data$steps <- mapply(fill.value, filled.data$steps, filled.data$interval)
 ```
 
 Make a histogram of the total number of steps taken each day and calculate the mean and median total number of steps.
 
 ```{r}
-total.steps <- tapply(filled.data$steps, filled.data$date, FUN=sum)
-qplot(total.steps, binwidth=1000, xlab="total number of steps taken each day")
-mean(total.steps)
-median(total.steps)
+echo = TRUE
+su2 <- tapply(activity2$steps, activity2$date, sum, na.rm=T)
+hist(su2, xlab = "sum of steps per day", main = "histogram of steps per day")
+```
+
+```{r}
+mean_su2 <- round(mean(su2))
+median_su2 <- round(median(su2))
+```
+The new values are :
+
+```{r}
+echo = TRUE
+print(c("The mean is",mean_su2))
+print(c("The median is",median_su2))
+```
+
+In order to compare the new values with the “old” values:
+
+```{r}
+echo = TRUE
+df_summary <- rbind(df_summary, data.frame(mean = c(mean_su, mean_su2), median = c(median_su, median_su2)))
+rownames(df_summary) <- c("with NA's", "without NA's")
+print(df_summary)
+```
+
+For comparison with NA's and without (see earlier):
+
+```{r}
+echo = TRUE
+summary(activity2)
 ```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-First, let's find the day of the week for each measurement in the dataset. In this part, we use the dataset with the filled-in values.
 
-```{r}
-weekday.or.weekend <- function(date) {
-    day <- weekdays(date)
-    if (day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"))
-        return("weekday")
-    else if (day %in% c("Saturday", "Sunday"))
-        return("weekend")
-    else
-        stop("invalid date")
-}
-filled.data$date <- as.Date(filled.data$date)
-filled.data$day <- sapply(filled.data$date, FUN=weekday.or.weekend)
-```
-
-Make a panel plot containing plots of average number of steps taken on weekdays and weekends.
-
-```{r}
-averages <- aggregate(steps ~ interval + day, data=filled.data, mean)
-ggplot(averages, aes(interval, steps)) + geom_line() + facet_grid(day ~ .) +
-    xlab("5-minute interval") + ylab("Number of steps")
-```
 
