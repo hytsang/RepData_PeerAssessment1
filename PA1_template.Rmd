@@ -13,8 +13,6 @@ echo = TRUE
 setwd("C:/Users/Howard/Documents/Coursera Data Science Stream/05. Report Writing/Project 1/")
 activity <- NULL
 activity <- read.csv("activity.csv", header = T, sep = ",")
-unzip(zipfile="activity.zip")
-data <- read.csv("activity.csv")
 ```
 
 The variable created during by this code are set to NULL.
@@ -73,12 +71,12 @@ The 5-minute interval (on average across all the days in the dataset) that conta
 ```{r}
 echo = TRUE
 mn_int[which.max(mn_int)]
-```
+``` 
 
 ## Imputing missing values
 
 ```{r}
-missing <- is.na(data$steps)
+missing <- is.na(activity$steps)
 # How many missing
 table(missing)
 ```
@@ -86,7 +84,7 @@ table(missing)
 # Replace each missing value with the mean value of its 5-minute interval
 ```{r}
 echo = TRUE
-activity2 <- activity  # creation of the dataset that will have no more NAs
+activity2 <- activity  
 for (i in 1:nrow(activity)){
     if(is.na(activity$steps[i])){
         activity2$steps[i]<- mn_int[[as.character(activity[i, "interval"])]]
@@ -118,7 +116,7 @@ In order to compare the new values with the “old” values:
 
 ```{r}
 echo = TRUE
-df_summary <- rbind(df_summary, data.frame(mean = c(mean_su, mean_su2), median = c(median_su, median_su2)))
+df_summary <- rbind(data.frame(mean = c(mean_su, mean_su2), median = c(median_su, median_su2)))
 rownames(df_summary) <- c("with NA's", "without NA's")
 print(df_summary)
 ```
