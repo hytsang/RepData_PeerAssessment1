@@ -6,6 +6,14 @@ output:
 ---
 
 
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
 ## Loading and preprocessing the data
 
 ```{r}
@@ -19,6 +27,9 @@ The variable created during by this code are set to NULL.
 
 ```{r}
 echo = TRUE
+df_weekday <- NULL
+df_weekend <- NULL
+df_final <- NULL
 df_summary <- NULL
 su2 <- NULL
 su <- NULL
@@ -51,9 +62,6 @@ echo = TRUE
 mean_su <- round(mean(su))
 median_su <- round(median(su))
 print(c("The mean is",mean_su))
-```
-
-```{r}
 print(c("The median is",median_su))
 ```
 
@@ -77,7 +85,6 @@ mn_int[which.max(mn_int)]
 
 ```{r}
 missing <- is.na(activity$steps)
-# How many missing
 table(missing)
 ```
 
@@ -137,6 +144,7 @@ activity2$weekday <- c("weekday")
 activity2[weekdays(as.Date(activity2[, 2])) %in% c("Saturday", "Sunday", "星期六", "星期日", "saturday", "sunday", "星期六", "星期日"), ][4] <- c("weekend")
 table(activity2$weekday == "weekend")
 
+activity2$weekday <- factor(activity2$weekday)
 activity2_weekend <- subset(activity2, activity2$weekday == "weekend")
 activity2_weekday <- subset(activity2, activity2$weekday == "weekday")
 
@@ -144,9 +152,6 @@ mean_activity2_weekday <- tapply(activity2_weekday$steps, activity2_weekday$inte
 mean_activity2_weekend <- tapply(activity2_weekend$steps, activity2_weekend$interval, mean)
 
 library(lattice)
-df_weekday <- NULL
-df_weekend <- NULL
-df_final <- NULL
 df_weekday <- data.frame(interval = unique(activity2_weekday$interval), avg = as.numeric(mean_activity2_weekday), day = rep("weekday", length(mean_activity2_weekday)))
 df_weekend <- data.frame(interval = unique(activity2_weekend$interval), avg = as.numeric(mean_activity2_weekend), day = rep("weekend", length(mean_activity2_weekend)))
 df_final <- rbind(df_weekday, df_weekend)
